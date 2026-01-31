@@ -1,0 +1,23 @@
+display_information:
+  name: Log Whisperer
+  description: Daily AI summaries of Azure Functions logs (errors + performance).
+  background_color: "#1F2937"
+
+features:
+  bot_user:
+    display_name: Log Whisperer
+    always_online: false
+
+oauth_config:
+  scopes:
+    bot:
+      # Required to create/authorise incoming webhooks during install
+      - incoming-webhook
+
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
+
+  incoming_webhooks:
+    incoming_webhooks_enabled: true

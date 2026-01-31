@@ -1,0 +1,51 @@
+{
+  "provider": "azure",
+  "timeWindow": {
+    "lastHours": 24
+  },
+  "azure": {
+    "workspaceId": "your-workspace-id-here",
+    "tenantId": "optional-tenant-id",
+    "subscriptionId": "optional-subscription-id",
+    "resourceGroup": "optional-resource-group",
+    "auth": {
+      "useDefaultCredential": true
+    },
+    "queryLimits": {
+      "maxRows": 1000,
+      "timeoutMs": 60000,
+      "retries": 3
+    }
+  },
+  "ai": {
+    "provider": "openai",
+    "model": "gpt-4o",
+    "maxTokens": 2000,
+    "temperature": 0.3,
+    "budgetControls": {
+      "maxInputChars": 50000,
+      "maxEvents": 500,
+      "maxSamplesPerQuery": 5
+    }
+  },
+  "notifiers": {
+    "slack": {
+      "webhookUrl": "https://hooks.slack.com/services/YOUR/WEBHOOK/URL",
+      "channel": "#alerts",
+      "username": "Log Whisperer",
+      "iconEmoji": ":mag:"
+    }
+  },
+  "output": {
+    "verbosity": "normal",
+    "includeRawStats": false,
+    "markdown": true
+  },
+  "sampling": {
+    "maxRowsPerQuery": 500,
+    "topErrorGroups": 10,
+    "samplesPerGroup": 3,
+    "enableTimeBucketing": false,
+    "bucketMinutes": 60
+  }
+}
