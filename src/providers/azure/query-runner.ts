@@ -3,7 +3,7 @@
  */
 
 import { DefaultAzureCredential, ClientSecretCredential, type TokenCredential } from '@azure/identity';
-import { LogsQueryClient } from '@azure/monitor-query';
+import { LogsQueryClient } from '@azure/monitor-query-logs';
 import type { LogWhispererConfig } from '../../core/types.js';
 
 /**

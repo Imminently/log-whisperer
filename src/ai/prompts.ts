@@ -12,6 +12,8 @@ Time Window: {timeWindow}
 Log Data:
 {logData}
 
+**IMPORTANT**: If the Log Data section is empty or shows "No errors found" or "No performance issues found", this means NO events of note occurred during this time window. This is a POSITIVE outcome - it indicates the system was operating normally with no errors or performance problems. Do NOT interpret empty log data as a collection error or failure. Simply report that no issues were found during this period.
+
 Analyze the logs carefully, paying attention to:
 - Error patterns and their sequence
 - Contextual logs around errors (traces, dependencies, requests)
@@ -23,9 +25,9 @@ Please provide a summary with the following structure:
 
 1. **Title**: A brief title for this digest (e.g., "Daily Digest - Last 24h")
 
-2. **Key Findings** (3-7 bullets): What changed or what matters most in this time window, focusing on patterns that indicate root causes
+2. **Key Findings** (3-7 bullets): What changed or what matters most in this time window, focusing on patterns that indicate root causes. If no errors or performance issues were found, state this clearly as a positive outcome (e.g., "No operational issues detected - system operating normally")
 
-3. **Error Groups**: For each significant error pattern:
+3. **Error Groups**: For each significant error pattern (if any were found). If no errors were found, include an empty array and note in Key Findings that no errors occurred:
    - Description of the error (be specific about operation names and exception types)
    - Count of occurrences
    - First occurrence timestamp (ISO format) - this helps users search logs more effectively
@@ -40,7 +42,7 @@ Please provide a summary with the following structure:
      * What related operations or dependencies to check
      * What configuration or code areas to review
 
-4. **Performance Hotspots**: Operations with performance issues:
+4. **Performance Hotspots**: Operations with performance issues (if any were found). If no performance issues were found, include an empty array and note in Key Findings that no performance problems occurred:
    - Operation name
    - Issue description
    - Severity (low/medium/high based on impact)

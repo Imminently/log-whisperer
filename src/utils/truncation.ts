@@ -133,7 +133,14 @@ export function formatBundleForAI(bundle: LogSignalBundle): string {
   lines.push(`Time Window: ${fromDate.toISOString()} to ${toDate.toISOString()}`);
   lines.push('');
 
-  if (bundle.errors.length > 0) {
+  if (bundle.errors.length === 0 && bundle.performance.length === 0) {
+    lines.push('## Summary');
+    lines.push('');
+    lines.push('**No errors or performance issues found during this time window.**');
+    lines.push('');
+    lines.push('This indicates the system was operating normally with no operational issues to report.');
+    lines.push('');
+  } else if (bundle.errors.length > 0) {
     lines.push('## Errors and Exceptions');
     for (const error of bundle.errors) {
       // Ensure dates are Date objects
@@ -182,6 +189,11 @@ export function formatBundleForAI(bundle: LogSignalBundle): string {
       lines.push(`  Failures: ${perf.failureCount}`);
       lines.push('');
     }
+  } else if (bundle.errors.length > 0) {
+    // Only show this if we have errors but no performance issues
+    lines.push('## Performance Issues');
+    lines.push('No performance issues found during this time window.');
+    lines.push('');
   }
 
   if (bundle.metadata.truncated) {

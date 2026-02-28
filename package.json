@@ -1,6 +1,6 @@
 {
-  "name": "log-whisperer",
-  "version": "0.1.0",
+  "name": "@imminently/log-whisperer",
+  "version": "0.1.5",
   "description": "AI-powered daily summaries of operational issues in cloud runtimes",
   "type": "module",
   "main": "./dist/index.js",
@@ -17,7 +17,8 @@
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "AGENTS.md"
   ],
   "scripts": {
     "build": "tsup",
@@ -27,7 +28,14 @@
     "test:coverage": "vitest --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src --ext .ts",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "version:patch": "npm version patch --no-git-tag-version",
+    "version:minor": "npm version minor --no-git-tag-version",
+    "version:major": "npm version major --no-git-tag-version",
+    "deploy": "npm run publish:patch",
+    "publish:patch": "npm run version:patch && npm run build && npm publish",
+    "publish:minor": "npm run version:minor && npm run build && npm publish",
+    "publish:major": "npm run version:major && npm run build && npm publish"
   },
   "keywords": [
     "logging",
@@ -40,17 +48,24 @@
   ],
   "author": "Joel Nation",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imminently/log-whisperer.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@azure/identity": "^4.0.0",
-    "@azure/monitor-query": "^1.2.0",
-    "commander": "^12.0.0",
+    "@azure/identity": "^4.13.0",
+    "@azure/monitor-query-logs": "^1.0.0",
+    "commander": "^14.0.3",
     "cosmiconfig": "^9.0.0",
-    "openai": "^4.0.0",
-    "yaml": "^2.3.0",
-    "zod": "^3.22.0"
+    "openai": "^6.17.0",
+    "yaml": "^2.8.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

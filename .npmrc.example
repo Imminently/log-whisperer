@@ -1,0 +1,10 @@
+# Example .npmrc file for using GitHub Packages
+# Copy this to your project root or home directory (~/.npmrc)
+
+# Configure registry for @imminently scope
+@imminently:registry=https://npm.pkg.github.com
+
+# Authenticate with GitHub (replace YOUR_GITHUB_TOKEN with your Personal Access Token)
+# To create a token: GitHub Settings → Developer settings → Personal access tokens
+# Required scopes: read:packages (for installing), write:packages (for publishing)
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN

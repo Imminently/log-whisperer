@@ -6,6 +6,7 @@ import { Command } from 'commander';
 import { runCommand } from './commands/run.js';
 import { validateConfigCommand } from './commands/validate-config.js';
 import { sampleQueriesCommand } from './commands/sample-queries.js';
+import { agentCommand } from './commands/agent.js';
 
 const program = new Command();
 
@@ -48,6 +49,14 @@ program
   .option('--to <iso-date>', 'End time (ISO 8601)')
   .action(async (options) => {
     const exitCode = await sampleQueriesCommand(options);
+    process.exit(exitCode);
+  });
+
+program
+  .command('agent')
+  .description('Print agent usage documentation (for AI agents)')
+  .action(async () => {
+    const exitCode = await agentCommand();
     process.exit(exitCode);
   });
 

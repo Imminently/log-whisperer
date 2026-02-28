@@ -14,15 +14,58 @@ AI-powered daily summaries of operational issues in cloud runtimes. Query logs, 
 
 ## Installation
 
+### Install from GitHub Packages
+
+This package is published to GitHub Packages. To install it:
+
+1. **Create or update `.npmrc` file** in your project root (or home directory):
+
+```ini
+@imminently:registry=https://npm.pkg.github.com
+```
+
+2. **Authenticate with GitHub** (choose one method):
+
+   **Option A: Using a Personal Access Token (PAT)**
+   
+   Create a `.npmrc` file in your home directory (`~/.npmrc`) with:
+   ```ini
+   @imminently:registry=https://npm.pkg.github.com
+   //npm.pkg.github.com/:_authToken=YOUR_GITHUB_TOKEN
+   ```
+   
+   To create a GitHub token:
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Generate a new token with `read:packages` scope
+   - Replace `YOUR_GITHUB_TOKEN` with your token
+
+   **Option B: Using npm login**
+   ```bash
+   npm login --scope=@imminently --registry=https://npm.pkg.github.com
+   ```
+   Use your GitHub username as the username, and a Personal Access Token (with `read:packages` scope) as the password.
+
+3. **Install the package**:
+
 ```bash
-bun install log-whisperer
+npm install @imminently/log-whisperer
+# or
+bun install @imminently/log-whisperer
+# or
+yarn add @imminently/log-whisperer
 ```
 
 Or use globally:
 
 ```bash
-bun install -g log-whisperer
+npm install -g @imminently/log-whisperer
 ```
+
+### Package Registry
+
+- **Package Name**: `@imminently/log-whisperer`
+- **Registry**: GitHub Packages (`https://npm.pkg.github.com`)
+- **Repository**: `https://github.com/imminently/log-whisperer`
 
 ## Quick Start
 
@@ -113,15 +156,21 @@ export AZURE_WORKSPACE_ID="your-workspace-id"
 
 ### 4. Authenticate with Azure
 
-Log Whisperer uses `DefaultAzureCredential`, which supports:
-- Managed Identity (when running in Azure)
-- Azure CLI (`az login`)
-- Environment variables (`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`)
+Log Whisperer uses `DefaultAzureCredential`, which automatically uses the appropriate authentication method:
 
-For local development, simply run:
+**For Azure Functions:**
+- Automatically uses the Function App's managed identity
+- **IMPORTANT**: You must grant the managed identity the **"Log Analytics Reader"** role on your Log Analytics workspace
+- See [Azure Functions & Managed Identity](#azure-functions--managed-identity) below for detailed setup instructions
+
+**For local development:**
 ```bash
 az login
 ```
+
+**For other scenarios:**
+- Managed Identity (when running in Azure VMs, Containers, etc.)
+- Environment variables (`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, `AZURE_TENANT_ID`)
 
 See the [Azure Configuration](#azure-configuration) section for detailed instructions on getting all Azure configuration values.
 
@@ -175,7 +224,7 @@ log-whisperer sample-queries --last-hours 1
 ## Library Usage
 
 ```typescript
-import { LogWhisperer, loadConfig } from 'log-whisperer';
+import { LogWhisperer, loadConfig } from '@imminently/log-whisperer';
 
 // Load config
 const config = await loadConfig();
@@ -197,7 +246,7 @@ if (result.success) {
 Or use the convenience function:
 
 ```typescript
-import { runLogWhisperer, loadConfig } from 'log-whisperer';
+import { runLogWhisperer, loadConfig } from '@imminently/log-whisperer';
 
 const config = await loadConfig();
 const result = await runLogWhisperer(config, { dryRun: true });
@@ -318,7 +367,7 @@ az monitor log-analytics workspace show \
 
 ### Authentication
 
-Log Whisperer uses `DefaultAzureCredential`, which tries authentication methods in this order:
+Log Whisperer uses `DefaultAzureCredential`, which automatically tries authentication methods in this order:
 
 1. **Environment Variables** (if set):
    - `AZURE_CLIENT_ID`
@@ -326,7 +375,10 @@ Log Whisperer uses `DefaultAzureCredential`, which tries authentication methods 
    - `AZURE_TENANT_ID`
 
 2. **Managed Identity** (when running in Azure):
-   - Automatically used when running on Azure resources (VMs, Functions, etc.)
+   - **Azure Functions**: Automatically uses the Function App's system-assigned or user-assigned managed identity
+   - **Azure VMs**: Uses the VM's managed identity
+   - **Azure Container Instances**: Uses the container's managed identity
+   - No configuration needed - it just works! Just ensure the managed identity has the correct permissions (see [Azure Permissions](#azure-permissions))
 
 3. **Azure CLI** (for local development):
    ```bash
@@ -337,7 +389,9 @@ Log Whisperer uses `DefaultAzureCredential`, which tries authentication methods 
 
 5. **Azure PowerShell** (if logged in)
 
-For local development, the easiest method is:
+**For Azure Functions**: The package will automatically use the Function App's managed identity. You don't need to provide any credentials in your code or configuration - just ensure the managed identity has the **"Log Analytics Reader"** role on the workspace (see [Azure Permissions](#azure-permissions)).
+
+**For local development**, the easiest method is:
 ```bash
 az login
 ```
@@ -398,6 +452,51 @@ az role assignment create \
 
 **Note:** Only `workspaceId` is required. All other fields are optional and can be omitted if using `DefaultAzureCredential` with Azure CLI authentication.
 
+## Azure Functions & Managed Identity
+
+When running in Azure Functions, the package automatically uses the Function App's managed identity via `DefaultAzureCredential`. No credentials need to be provided in your code or configuration.
+
+**Required Permissions:**
+The Function App's managed identity needs the **"Log Analytics Reader"** role on the Log Analytics workspace. To grant this:
+
+**Option 1: Azure Portal**
+1. Go to your Log Analytics workspace
+2. Click **"Access control (IAM)"** in the left menu
+3. Click **"+ Add"** → **"Add role assignment"**
+4. Select role: **"Log Analytics Reader"**
+5. Click **"Next"**
+6. Under **"Assign access to"**, select **"Managed identity"**
+7. Click **"+ Select members"**
+8. Select your Function App (or the managed identity)
+9. Click **"Select"** → **"Next"** → **"Review + assign"**
+
+**Option 2: Azure CLI**
+```bash
+# First, enable managed identity on your Function App (if not already enabled)
+az functionapp identity assign \
+  --name <your-function-app-name> \
+  --resource-group <your-resource-group>
+
+# Get the managed identity principal ID
+PRINCIPAL_ID=$(az functionapp identity show \
+  --name <your-function-app-name> \
+  --resource-group <your-resource-group> \
+  --query principalId \
+  --output tsv)
+
+# Grant Log Analytics Reader role
+az role assignment create \
+  --assignee $PRINCIPAL_ID \
+  --role "Log Analytics Reader" \
+  --scope /subscriptions/<subscription-id>/resourceGroups/<rg>/providers/Microsoft.OperationalInsights/workspaces/<workspace-name>
+```
+
+**Troubleshooting:**
+- If you get "insufficient access" errors, verify the role assignment was successful
+- It may take a few minutes for role assignments to propagate
+- Check that you're using the correct workspace ID (must be a GUID, not a name)
+- Verify managed identity is enabled on your Function App: `az functionapp identity show --name <name> --resource-group <rg>`
+
 ## Slack Configuration
 
 ### Creating a Slack App and Webhook
@@ -442,7 +541,7 @@ To send notifications to multiple channels, you can:
 1. Create a new provider class implementing `ILogProvider`:
 
 ```typescript
-import type { ILogProvider, LogSignalBundle, LogWhispererConfig } from 'log-whisperer';
+import type { ILogProvider, LogSignalBundle, LogWhispererConfig } from '@imminently/log-whisperer';
 
 export class MyProvider implements ILogProvider {
   name = 'my-provider';
@@ -462,7 +561,7 @@ export class MyProvider implements ILogProvider {
 1. Create a new notifier class implementing `INotifier`:
 
 ```typescript
-import type { INotifier, Summary, NotificationMeta, NotifyResult } from 'log-whisperer';
+import type { INotifier, Summary, NotificationMeta, NotifyResult } from '@imminently/log-whisperer';
 
 export class MyNotifier implements INotifier {
   name = 'my-notifier';
