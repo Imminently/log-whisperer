@@ -221,6 +221,22 @@ log-whisperer sample-queries
 log-whisperer sample-queries --last-hours 1
 ```
 
+### Explorer UI
+
+Start the local log explorer UI from this repository:
+
+```bash
+npm run ui
+```
+
+Or after building/installing the CLI:
+
+```bash
+log-whisperer ui --config ./log-whisperer.config.json --port 4173
+```
+
+The explorer uses the optional `explorer` config section to find API start events, show candidate transactions, resolve the selected candidate to Azure `operation_Id`, and load the operation log stream.
+
 ## Library Usage
 
 ```typescript
@@ -426,7 +442,7 @@ az role assignment create \
 az role assignment create \
   --assignee your-email@example.com \
   --role "Log Analytics Reader" \
-  --scope /subscriptions/01ba87f7-9ffa-44dd-b03b-2b8ef0b0ee34/resourceGroups/edward-qut-dev/providers/Microsoft.OperationalInsights/workspaces/edward-qut-dev-workspace
+  --scope /subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.OperationalInsights/workspaces/<workspace-name>
 ```
 
 ### Complete Azure Config Example

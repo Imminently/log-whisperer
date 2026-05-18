@@ -23,6 +23,8 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
+    "dev:ui": "npm run build && node --watch dist/cli.js ui",
+    "ui": "npm run build && node dist/cli.js ui",
     "start": "node dist/cli.js",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
@@ -63,6 +65,7 @@
     "@azure/monitor-query-logs": "^1.0.0",
     "commander": "^14.0.3",
     "cosmiconfig": "^9.0.0",
+    "monaco-editor": "^0.55.1",
     "openai": "^6.17.0",
     "yaml": "^2.8.2",
     "zod": "^3.25.76"

@@ -43,3 +43,105 @@ sampling:
   samplesPerGroup: 3
   enableTimeBucketing: false
   bucketMinutes: 60
+
+explorer:
+  services:
+    - id: primary-api
+      name: Primary API
+      provider: azure
+      azure:
+        workspaceId: your-log-analytics-workspace-guid
+    - id: secondary-api
+      name: Secondary API
+      provider: azure
+      azure:
+        workspaceId: your-log-analytics-workspace-guid
+  host: api.example.com
+  detectors:
+    - id: primary-api-start
+      type: api-start
+      serviceId: primary-api
+      source: trace
+      messageRegex: '^Service - API called:\s*\[(?<payload>.*)\]\s*$'
+      fieldExtractors:
+        - name: requestId
+          regex: 'requestId:\s*"(?<value>[^"]+)"'
+        - name: method
+          regex: 'method:\s*"(?<value>[A-Z]+)"'
+        - name: path
+          regex: 'x-original-url":"(?<value>[^"]+)"'
+        - name: origin
+          regex: 'origin":"(?<value>[^"]+)"'
+        - name: tenant
+          regex: 'x-tenancy":"(?<value>[^"]+)"'
+        - name: user
+          regex: '"(?:preferred_username|upn|email|user|username|userName)"\s*:\s*"(?<value>[^"]+)"'
+        - name: upn
+          regex: '"upn"\s*:\s*"(?<value>[^"]+)"'
+        - name: email
+          regex: '"email"\s*:\s*"(?<value>[^"]+)"'
+      searchFields:
+        - requestId
+        - method
+        - path
+        - tenant
+        - user
+      sensitiveFields:
+        - authorization
+        - headers.authorization
+    - id: api-end
+      type: api-end
+      serviceId: "*"
+      source: trace
+      regex: 'API completed|Response (?<status>[0-9]{3})'
+    - id: database-call
+      type: database-call
+      serviceId: "*"
+      source: trace
+      regex: '(SQL|database|db) (?<operation>SELECT|INSERT|UPDATE|DELETE|connection)'
+    - id: httpsfn-external-api-start
+      type: external-service-call
+      phase: start
+      correlationField: traceId
+      serviceId: "*"
+      source: trace
+      regex: '^HttpsFn::execute - Calling endpoint:\s*\[\s*url:\s*"(?<url>[^"]+)",\s*method:\s*"(?<method>[A-Z]+)",\s*query:\s*(?<query>\{.*?\}),\s*headers:\s*(?<headers>\{.*?\}),\s*requestId:\s*"(?<requestId>[^"]+)",\s*executionTime:\s*"(?<executionTime>[^"]+)"\s*\]\s*$'
+      fieldExtractors:
+        - name: targetHost
+          regex: 'url:\s*"https?://(?<value>[^/\"]+)'
+        - name: targetPath
+          regex: 'url:\s*"https?://[^/\"]+(?<value>/[^?\"]*)'
+        - name: tenant
+          regex: '"X-TENANCY":"(?<value>[^"]+)"'
+        - name: traceparent
+          regex: '"traceparent":"(?<value>[^"]+)"'
+        - name: traceId
+          regex: '"traceparent":"00-(?<value>[A-Fa-f0-9]{32})-[A-Fa-f0-9]{16}-[A-Fa-f0-9]{2}"'
+        - name: parentSpanId
+          regex: '"traceparent":"00-[A-Fa-f0-9]{32}-(?<value>[A-Fa-f0-9]{16})-[A-Fa-f0-9]{2}"'
+    - id: httpsfn-external-api-end
+      type: external-service-call
+      phase: end
+      correlationField: traceId
+      serviceId: "*"
+      source: trace
+      regex: '^HttpsFn::execute - Execute success:\s*\[\s*url:\s*"(?<url>[^"]+)",\s*method:\s*"(?<method>[A-Z]+)",\s*query:\s*(?<query>\{.*?\}),\s*headers:\s*(?<headers>\{.*?\}),\s*status:\s*(?<status>\d{3}),\s*requestId:\s*"(?<requestId>[^"]+)",\s*executionTime:\s*"(?<executionTime>[^"]+)"\s*\]\s*$'
+      fieldExtractors:
+        - name: targetHost
+          regex: 'url:\s*"https?://(?<value>[^/\"]+)'
+        - name: targetPath
+          regex: 'url:\s*"https?://[^/\"]+(?<value>/[^?\"]*)'
+        - name: tenant
+          regex: '"X-TENANCY":"(?<value>[^"]+)"'
+        - name: traceparent
+          regex: '"traceparent":"(?<value>[^"]+)"'
+        - name: traceId
+          regex: '"traceparent":"00-(?<value>[A-Fa-f0-9]{32})-[A-Fa-f0-9]{16}-[A-Fa-f0-9]{2}"'
+        - name: parentSpanId
+          regex: '"traceparent":"00-[A-Fa-f0-9]{32}-(?<value>[A-Fa-f0-9]{16})-[A-Fa-f0-9]{2}"'
+  defaults:
+    maxDepth: 5
+    contextWindowMinutes: 2
+    maxRowsPerQuery: 500
+    maxRowsPerTrace: 1000
+    port: 4173

@@ -64,8 +64,9 @@ export async function executeQuery(
         ),
       ]);
 
-      if (result.tables && result.tables.length > 0) {
-        const table = result.tables[0];
+      const tables = 'tables' in result ? result.tables : [];
+      if (tables && tables.length > 0) {
+        const table = tables[0];
         const rows: unknown[] = [];
 
         for (const row of table.rows) {

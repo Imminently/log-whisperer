@@ -127,7 +127,7 @@ export class AzureProvider implements ILogProvider {
               new Date(error.lastSeen.getTime() + contextWindowMinutes * 60 * 1000)
             );
             
-          const context: ErrorContext[] = contextRows.map((row: any) => {
+          const context = contextRows.map((row: any): ErrorContext | null => {
             let timeGenerated: Date;
             try {
               timeGenerated = safeDate(row.TimeGenerated);

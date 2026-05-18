@@ -7,6 +7,7 @@ import { runCommand } from './commands/run.js';
 import { validateConfigCommand } from './commands/validate-config.js';
 import { sampleQueriesCommand } from './commands/sample-queries.js';
 import { agentCommand } from './commands/agent.js';
+import { uiCommand } from './commands/ui.js';
 
 const program = new Command();
 
@@ -57,6 +58,17 @@ program
   .description('Print agent usage documentation (for AI agents)')
   .action(async () => {
     const exitCode = await agentCommand();
+    process.exit(exitCode);
+  });
+
+program
+  .command('ui')
+  .description('Start the local interactive log explorer UI')
+  .option('-c, --config <path>', 'Path to config file')
+  .option('--port <port>', 'Port for the local UI server', parseInt)
+  .option('--host <host>', 'Host for the local UI server')
+  .action(async (options) => {
+    const exitCode = await uiCommand(options);
     process.exit(exitCode);
   });
 

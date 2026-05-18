@@ -43,7 +43,7 @@ AppTraces
 | take 1
 `;
 
-    const result = await client.queryWorkspace(workspaceId, testQuery, {
+    await client.queryWorkspace(workspaceId, testQuery, {
       startTime: oneHourAgo,
       endTime: now,
     });

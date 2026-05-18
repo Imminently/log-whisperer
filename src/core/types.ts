@@ -2,6 +2,8 @@
  * Core type definitions for Log Whisperer
  */
 
+import type { ExplorerConfig } from './explorer-types.js';
+
 /**
  * Main configuration interface
  */
@@ -67,6 +69,8 @@ export interface LogWhispererConfig {
     enableTimeBucketing?: boolean; // Detect spikes
     bucketMinutes?: number; // Default: 60
   };
+
+  explorer?: ExplorerConfig;
 }
 
 /**
@@ -92,6 +96,7 @@ export interface ErrorContext {
   severityLevel?: string;
   type?: string;
   target?: string;
+  name?: string;
   success?: boolean;
   durationMs?: number;
   resultCode?: string;
